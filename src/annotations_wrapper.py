@@ -230,6 +230,7 @@ class AnnotationsWrapper:
         dataset_name = config.get_dataset_name()
         step_size = config.get_step_size()
         device = config.get_device()
+        fast_impl = config.fast_impl_is_enabled()
 
         if step_size is None:
             step_size = len(self.concept_labels)
@@ -253,7 +254,7 @@ class AnnotationsWrapper:
             # Generate the missing masks
             print(f"Missing {len(missing)} masks in {masks_directory}")
             self.save_segmentation_masks(
-                masks_directory, mask_shape, step_size, missing=missing, fast_impl=False,
+                masks_directory, mask_shape, step_size, missing=missing, fast_impl=fast_impl,
                 device=device
             )
 

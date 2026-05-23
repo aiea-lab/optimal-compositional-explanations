@@ -32,6 +32,7 @@ def main(argv):
         layer=FLAGS.layer,
         device=FLAGS.device,
         seed=FLAGS.seed,
+        fast_impl=FLAGS.fast_impl,
         root_models=FLAGS.root_models,
         root_datasets=FLAGS.root_datasets,
         root_segmentations=FLAGS.root_segmentations,

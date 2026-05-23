@@ -20,6 +20,7 @@ class Settings:
         device,
         step_size=80,
         seed=0,
+        fast_impl=False,
         dataset="places365",
         root_models="data/model/",
         root_datasets="data/dataset/",
@@ -44,6 +45,7 @@ class Settings:
         self.__layer = layer
         self.__length = length
         self.__seed = seed
+        self.__fast_impl = fast_impl
 
     ###### Getters ######
 
@@ -83,6 +85,9 @@ class Settings:
     def get_seed(self):
         return self.__seed
 
+    def fast_impl_is_enabled(self):
+        return self.__fast_impl
+    
     ###### Setters ######
     def set_heuristic(self, heuristic):
         self.__heuristic = heuristic
