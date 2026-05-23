@@ -4,7 +4,7 @@ set -e
 # Start from parent directory of script
 cd "$(dirname "$(dirname "$(readlink -f "$0")")")"
 
-echo "Downloading resnet18, alexnet, densenet161, and vgg16 trained on Places365"
+echo "Downloading resnet18, alexnet, and densenet161 trained on Places365"
 mkdir -p data/model/zoo
 pushd data/model/zoo
 wget --progress=bar \
