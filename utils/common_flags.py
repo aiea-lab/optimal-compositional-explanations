@@ -24,7 +24,7 @@ absl.flags.DEFINE_list("units", None, "Specific units to investigate")
 absl.flags.DEFINE_integer("random_units", 0, "number of units")
 
 # Paths parameters
-absl.flags.DEFINE_string("root_datasets", "data/dataset", "root directory for datasets")
+absl.flags.DEFINE_string("root_datasets", "datasets/data", "root directory for datasets")
 absl.flags.DEFINE_string(
     "root_segmentations", "data/cache/segmentations", "root directory for segmentations"
 )
