@@ -61,8 +61,9 @@ def main(argv):
         )
 
     # Get Info
-    disjoint_info = mask_utils.get_disjoint_info(cfg)
     if FLAGS.heuristic == "optimal" or FLAGS.heuristic == "beam_optimal":
+        disjoint_info = mask_utils.get_disjoint_info(cfg)
+
         masks_info = mask_utils.get_masks_info(masks, config=cfg, quantities=True)
     elif FLAGS.heuristic == "mmesh":
         masks_info = mask_utils.get_masks_info(
@@ -73,6 +74,7 @@ def main(argv):
             inscribed=True,
             bb_boxes=True,
         )
+        disjoint_info = None
     elif FLAGS.heuristic == "none":
         masks_info = None
     else:
