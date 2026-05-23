@@ -110,7 +110,7 @@ The repository also includes the implementation of M-MESH in the `compositional/
 ## Quick Start
 
 ### Setup the environment
-Follow step 1, 2, and 3 described in `PAPER.md` to set up the environment and download the required assets.
+Follow step 1, 2, and 3 described in <a href="PAPER.md">PAPER.md</a> to set up the environment and download the required assets.
 
 ### Main CLI Flags
 All the scripts share a set of user arguments that define the configuration for which explanations are generated.
