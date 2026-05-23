@@ -4,9 +4,7 @@ Includes reproducibility, mask parsing, visualization, and helper routines.
 """
 
 import random
-import os
 
-from numpy.random import RandomState
 import scipy.sparse as sparse
 import numpy as np
 import torch
@@ -17,14 +15,14 @@ from utils import mask_utils
 
 
 ##### SEED UTILS #####
-def set_seed(seed: int) -> RandomState:
+def set_seed(seed: int) -> torch.Generator:
     """Method to set seed across runs to ensure reproducibility.
     It fixes seed for single-gpu machines.
     Args:
         seed (int): Seed to fix reproducibility. It should different for
             each run
     Returns:
-        RandomState: fixed random state to initialize dataset iterators
+        torch.Generator: fixed random generator to initialize dataset iterators
     """
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = (
@@ -35,7 +33,7 @@ def set_seed(seed: int) -> RandomState:
     torch.cuda.manual_seed(seed)
     random.seed(seed)
     g = torch.Generator()
-    g.manual_seed(0)
+    g.manual_seed(seed)
     torch.use_deterministic_algorithms(True)
     return g
 
