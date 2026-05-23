@@ -73,8 +73,8 @@ def beam_search(
 
         # Compute IoU
         masks_formula = mask_utils.get_formula_mask(
-            candidate_formula, masks, beam_masks
-        ).to(bitmaps.device)
+            candidate_formula, masks, beam_masks, device=bitmaps.device
+        )
         iou = metrics.iou(masks_formula, bitmaps)
 
         # Update visited nodes

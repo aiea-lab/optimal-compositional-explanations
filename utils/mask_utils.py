@@ -219,40 +219,41 @@ def get_masks_info(
     return masks_info
 
 
-def get_formula_mask(f, masks, optional_masks=None):
+def get_formula_mask(f, masks, optional_masks=None, device=torch.device("cpu")):
     """
     Function to return a mask for a given formula.
     Args:
         f (src.formula.Formula): formula.
         masks (list): list of masks.
         optional_masks (dict): dictionary of additional masks (beam masks).
+        device (torch.device): device to move the masks to.
     Returns:
         Formula's Mask.
     """
     if optional_masks is not None and f in optional_masks.keys():
         mask = optional_masks[f]
-        return general_utils.parse_mask_by_type(mask)
+        return general_utils.parse_mask_by_type(mask).to(device)
     if isinstance(f, F.Leaf):
         mask = masks[f.val]
-        return general_utils.parse_mask_by_type(mask)
+        return general_utils.parse_mask_by_type(mask).to(device)
     elif isinstance(f, F.Or):
-        masks_l = get_formula_mask(f.left, masks, optional_masks)
-        masks_r = get_formula_mask(f.right, masks, optional_masks)
+        masks_l = get_formula_mask(f.left, masks, optional_masks, device)
+        masks_r = get_formula_mask(f.right, masks, optional_masks, device)
         return masks_l | masks_r
     elif isinstance(f, F.And):
-        masks_l = get_formula_mask(f.left, masks, optional_masks)
-        masks_r = get_formula_mask(f.right, masks, optional_masks)
+        masks_l = get_formula_mask(f.left, masks, optional_masks, device)
+        masks_r = get_formula_mask(f.right, masks, optional_masks, device)
         return masks_l & masks_r
     elif isinstance(f, F.Not):
-        return ~get_formula_mask(f.val, masks, optional_masks)
+        return ~get_formula_mask(f.val, masks, optional_masks, device)
     elif isinstance(f, int):
         mask = masks[f]
-        return general_utils.parse_mask_by_type(mask)
+        return general_utils.parse_mask_by_type(mask).to(device)
     else:
         raise ValueError(f"Unknown formula type {type(f)}")
 
 
-def get_formula_mask_and_tree(f, masks, path_masks=None):
+def get_formula_mask_and_tree(f, masks, path_masks=None, device=torch.device("cpu")):
     """
     Get the masks of the ancestors of a formula f including itself.
     Note that this is equivalent to get_formula_mask but it also returns the masks of the ancestors of f.
@@ -260,6 +261,7 @@ def get_formula_mask_and_tree(f, masks, path_masks=None):
         f (F.Formula): formula to get the ancestors masks
         masks (dict): dictionary of the masks of the leaf nodes
         path_masks (dict): dictionary of the masks of the ancestors already computed in the path from the root to the current node (optional)
+        device (torch.device): device to move the masks to
     Returns:
         dict: dictionary of the masks of the ancestors of f including itself
 
@@ -270,32 +272,32 @@ def get_formula_mask_and_tree(f, masks, path_masks=None):
         path_masks = {}
     if isinstance(f, F.Leaf):
         mask = masks[f.val]
-        path_masks[f] = general_utils.parse_mask_by_type(mask)
+        path_masks[f] = general_utils.parse_mask_by_type(mask).to(device)
         return path_masks
     elif isinstance(f, F.Or):
-        l_ancestors_masks = get_formula_mask_and_tree(f.left, masks, path_masks)
-        r_ancestors_masks = get_formula_mask_and_tree(f.right, masks, path_masks)
+        l_ancestors_masks = get_formula_mask_and_tree(f.left, masks, path_masks, device)
+        r_ancestors_masks = get_formula_mask_and_tree(f.right, masks, path_masks, device)
         mask = l_ancestors_masks[f.left] | r_ancestors_masks[f.right]
         path_masks[f] = mask
         path_masks.update(l_ancestors_masks)
         path_masks.update(r_ancestors_masks)
         return path_masks
     elif isinstance(f, F.And):
-        l_ancestors_masks = get_formula_mask_and_tree(f.left, masks, path_masks)
-        r_ancestors_masks = get_formula_mask_and_tree(f.right, masks, path_masks)
+        l_ancestors_masks = get_formula_mask_and_tree(f.left, masks, path_masks, device)
+        r_ancestors_masks = get_formula_mask_and_tree(f.right, masks, path_masks, device)
         mask = l_ancestors_masks[f.left] & r_ancestors_masks[f.right]
         path_masks[f] = mask
         path_masks.update(l_ancestors_masks)
         path_masks.update(r_ancestors_masks)
         return path_masks
     elif isinstance(f, F.Not):
-        l_ancestors_masks = get_formula_mask_and_tree(f.val, masks, path_masks)
+        l_ancestors_masks = get_formula_mask_and_tree(f.val, masks, path_masks, device)
         not_mask = ~l_ancestors_masks[f.val]
         path_masks[f] = not_mask
         return path_masks
     elif isinstance(f, int):
         mask = masks[f]
-        path_masks[F.Leaf(f)] = general_utils.sparse_to_torch(mask)
+        path_masks[F.Leaf(f)] = general_utils.sparse_to_torch(mask).to(device)
         return path_masks
     else:
         raise ValueError(f"Unknown formula type {type(f)}")

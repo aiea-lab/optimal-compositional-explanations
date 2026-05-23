@@ -116,7 +116,7 @@ def get_grid_intersection(
 
     """
 
-    label_mask = mask_utils.get_formula_mask(label, masks).to(device)
+    label_mask = mask_utils.get_formula_mask(label, masks, device=device)
 
     # Compute the intersection between the bitmaps and the label mask
     # This will be used to compute the coverage of the bitmaps on the label mask, which will be used to select the samples to show in the grid.

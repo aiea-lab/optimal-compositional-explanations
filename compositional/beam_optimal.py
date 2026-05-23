@@ -32,9 +32,7 @@ def compute_beam_quantities(beam, masks, beam_masks, heuristic_info, bitmaps):
             continue
 
         # Compute the mask for the label
-        label_mask = mask_utils.get_formula_mask(label, masks, beam_masks).to(
-            bitmaps.device
-        )
+        label_mask = mask_utils.get_formula_mask(label, masks, beam_masks, device=bitmaps.device)
 
         # Compute the quantities from the mask
         label_quantities = optimal_utils.compute_quantities_vector(

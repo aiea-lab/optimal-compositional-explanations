@@ -761,7 +761,7 @@ def perform_search(
 
                 # Get the formula mask and its tree
                 tree_formula_masks = mask_utils.get_formula_mask_and_tree(
-                    label_node, masks
+                    label_node, masks, device=bitmaps.device
                 )
                 label_mask = tree_formula_masks[label_node]
 

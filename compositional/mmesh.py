@@ -332,15 +332,14 @@ def get_beam_info(beam, masks, bitmaps, mask_shape, device):
             continue
 
         # Compute formula mask
-        masks_formula = mask_utils.get_formula_mask(formula, masks)
+        masks_formula = mask_utils.get_formula_mask(formula, masks, device=bitmaps.device)
         mask_type = "tensor" if isinstance(masks_formula, torch.Tensor) else "sparse"
-        if mask_type == "torch":
+        if mask_type == "tensor":
             beam_masks[formula] = masks_formula.to(device)
         elif mask_type == "sparse":
             beam_masks[formula] = general_utils.torch_to_sparse(masks_formula).to(
                 device
             )
-        masks_formula = masks_formula.to(bitmaps.device)
         # Compute heuristic info
         areas[formula] = masks_formula.sum(1, dtype=torch.int32).to(device)
         intersections[formula] = (
