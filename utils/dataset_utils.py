@@ -119,7 +119,7 @@ class BrodenWrapper(DatasetWrapper):
         self.data_loader = torch.utils.data.DataLoader(
             self.dataset,
             batch_size=1,
-            worker_init_fn=seed,
+            worker_init_fn=general_utils.seed_worker,
             generator=generator,
         )
 
