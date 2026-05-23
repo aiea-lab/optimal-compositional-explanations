@@ -161,8 +161,8 @@ class AnnotationsWrapper:
         if fast_impl:
             # Collect segmentation masks for the whole dataset
             dataset_segmentations = []
-            for data in tqdm(self.data_loader, desc="Computing Segmentations"):
-                segmentations = self.data_wrapper.concept_labels(data)
+            for data in tqdm(self.data_wrapper.data_loader, desc="Computing Segmentations"):
+                segmentations = self.data_wrapper.extract_segmentations(data)
                 dataset_segmentations.append(segmentations)
         else:
             dataset_segmentations = None
