@@ -119,9 +119,10 @@ def compute_next_search_space(formulas, candidate_labels):
             if candidate_term.val in vals_formula:
                 continue
             for op, negate in [(F.Or, False), (F.And, False), (F.And, True)]:
+                candidate_to_attach = candidate_term
                 if negate:
-                    candidate_term = F.Not(candidate_term)
-                candidate_formula = op(formula, candidate_term)
+                    candidate_to_attach = F.Not(candidate_to_attach)
+                candidate_formula = op(formula, candidate_to_attach)
                 candidate_formula.iou = 1.0
 
                 search_space.append(candidate_formula)
