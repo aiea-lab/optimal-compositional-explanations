@@ -128,7 +128,7 @@ def main(argv):
                 mask_shape=mask_shape,
             )
             device = (
-                torch.device(cfg.device)
+                torch.device(cfg.get_device())
                 if torch.cuda.is_available()
                 else torch.device("cpu")
             )
@@ -141,22 +141,22 @@ def main(argv):
 
             # Generate Samples Grid
             mmesh_grid = general_utils.get_grid_intersection(
-                dataset,
-                mmesh_label,
-                masks,
-                bitmaps,
-                number_samples,
-                mask_shape,
-                cfg.device,
+                dataset=dataset,
+                label=mmesh_label,
+                masks=masks,
+                bitmaps=bitmaps,
+                number_samples=number_samples,
+                mask_shape=mask_shape,
+                device=cfg.get_device(),
             )
             optimal_grid = general_utils.get_grid_intersection(
-                dataset,
-                optimal_label,
-                masks,
-                bitmaps,
-                number_samples,
-                mask_shape,
-                cfg.device,
+                dataset=dataset,
+                label=optimal_label,
+                masks=masks,
+                bitmaps=bitmaps,
+                number_samples=number_samples,
+                mask_shape=mask_shape,
+                device=cfg.get_device(),
             )
 
             # Save figure
