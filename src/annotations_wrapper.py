@@ -115,12 +115,12 @@ class AnnotationsWrapper:
             pickle.dump(disjoint_matrix, f)
         return disjoint_matrix
 
-    def fast_extractions(self, concepts, mask_shape, dataset_annotations):
+    def fast_extractions(self, concepts, mask_shape, dataset_annotations, device=torch.device("cuda")):
         masks = [[] for _ in range(len(self.concept_labels))]
         for concept_index in concepts:
             concept_mask = []
             for segmentations in dataset_annotations:
-                segmentations = segmentations.cuda()
+                segmentations = segmentations.to(device)
                 concept_mask.append(
                     parse_concept(segmentations, concept_index, mask_shape)
                 )
@@ -128,12 +128,12 @@ class AnnotationsWrapper:
             masks[concept_index].append(concept_mask.cpu())
         return masks
 
-    def slow_extractions(self, concepts, mask_shape):
+    def slow_extractions(self, concepts, mask_shape, device=torch.device("cuda")):
         masks = [[] for _ in range(len(self.concept_labels))]
         for data in self.data_wrapper.data_loader:
             # Extract the annotations from the data
             segmentations = self.data_wrapper.extract_segmentations(data)
-            segmentations = segmentations.cuda()
+            segmentations = segmentations.to(device)
 
             # Compute the masks for the selected concepts
             for concept_index in concepts:
@@ -142,7 +142,7 @@ class AnnotationsWrapper:
         return masks
 
     def save_segmentation_masks(
-        self, segmentation_dir, mask_shape, step_size=20, missing=None, fast_impl=True
+        self, segmentation_dir, mask_shape, step_size=20, missing=None, fast_impl=True, device=None
     ):
         """
         Saves the segmentation masks for the given dataloader and labels in the given directory.
@@ -181,10 +181,10 @@ class AnnotationsWrapper:
             if len(concepts) > 0:
                 if fast_impl:
                     masks = self.fast_extractions(
-                        concepts, mask_shape, dataset_segmentations
+                        concepts, mask_shape, dataset_segmentations, device=device
                     )
                 else:
-                    masks = self.slow_extractions(concepts, mask_shape)
+                    masks = self.slow_extractions(concepts, mask_shape, device=device)
 
                 # Save the masks for the selected concepts
                 for concept_index in sorted(range(len(masks))):
@@ -229,6 +229,8 @@ class AnnotationsWrapper:
         mask_shape = config.get_mask_shape()
         dataset_name = config.get_dataset_name()
         step_size = config.get_step_size()
+        device = config.get_device()
+
         if step_size is None:
             step_size = len(self.concept_labels)
         else:
@@ -251,7 +253,8 @@ class AnnotationsWrapper:
             # Generate the missing masks
             print(f"Missing {len(missing)} masks in {masks_directory}")
             self.save_segmentation_masks(
-                masks_directory, mask_shape, step_size, missing=missing, fast_impl=False
+                masks_directory, mask_shape, step_size, missing=missing, fast_impl=False,
+                device=device
             )
 
         # Load the masks
