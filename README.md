@@ -67,9 +67,9 @@ The main utilities for computing the `dIoU` and for managing quantities are incl
 ### Heuristics
 
 The heuristics operate on the decomposed IoU quantities and estimates:
-- the alignment of candidate expansion ($ \widehat{IoU} (L) $)
-- the best possible alignment reachable from a node $L$ in the search tree by attaching additional concepts to the current formula ($ \widehat{IoU} (L^*) $).
-- upper and lower bounds for unexplored paths ($ \widehat{IoU}_{min} $ and $ \widehat{IoU}_{max} $).
+- the alignment of candidate expansion (i.e. IoU of $L$)
+- the best possible alignment reachable from a node $L$ in the search tree by attaching additional concepts to the current formula ($L^*$).
+- upper and lower bounds for unexplored paths ($IoU_{min}$ and $IoU_{max}$).
 
 Two estimation strategies are possible:
 - **sample-based estimation**, which computes quantities per sample and is more precise;
