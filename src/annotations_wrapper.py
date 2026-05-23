@@ -33,7 +33,7 @@ def parse_concept(segm_data, concept_value, mask_shape):
             segm_data.shape[3],
         ),
         dtype=bool,
-    ).cuda()
+    ).to(segm_data.device)
     for index_segmentation in range(num_categories_segmentations):
         # We unify the concept value across all the segmentation categories by checking if the concept value is present in any of the segmentation categories. This is because in some datasets, the same concept can be represented by different values in different segmentation categories. For example, in the broden dataset, the concept "car" can be represented by the value 1 in the "object" category and by the value 2 in the "scene" category. By unifying the concept value across all the segmentation categories
         concept_mask = concept_mask | (
