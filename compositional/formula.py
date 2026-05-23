@@ -13,8 +13,6 @@ class F:
     Abstract class to represent a formula.
     """
 
-    def get_atoms(self):
-        pass
 
     def tree_path(self):
         """
@@ -102,13 +100,6 @@ class Leaf(F):
     def get_vals(self):
         return [self.val]
 
-    def get_leaves(self):
-        return [self]
-
-    def get_atoms(self):
-        atoms = [self]
-        return atoms
-
     def tree_path(self):
         return [self]
 
@@ -117,9 +108,6 @@ class Leaf(F):
 
     def get_ops(self):
         return []
-
-    def flip_atoms(self):
-        return self
 
     # we redefine the equality function
     def __eq__(self, other):
@@ -170,15 +158,6 @@ class UnaryNode(Node):
     def get_vals(self):
         return self.val.get_vals()
 
-    def get_leaves(self):
-        return self.val.get_leaves()
-
-    def get_atoms(self):
-        atoms = []
-        if self.op == "NOT":
-            atoms.extend(self)
-        return atoms
-
     def tree_path(self):
         return [self]
 
@@ -218,29 +197,6 @@ class BinaryNode(Node):
         vals.extend(self.right.get_vals())
         vals.extend(self.left.get_vals())
         return vals
-
-    def get_leaves(self):
-        leaves = []
-        leaves.extend(self.right.get_leaves())
-        leaves.extend(self.left.get_leaves())
-        return leaves
-
-    def get_atoms(self):
-        atoms = []
-        if self.op == "OR":
-            atoms.extend(self.left.get_atoms())
-            atoms.extend(self.right.get_atoms())
-        elif self.op == "AND":
-            if isinstance(self.right, Not):
-                atoms_left = self.left.get_atoms()
-                for atom in atoms_left:
-                    atoms.append(And(atom, self.right))
-            else:
-                atoms = [self]
-        return atoms
-
-    def flip_atoms(self):
-        return BinaryNode(self.right, self.left)
 
     def get_ops(self):
         """Function to return the operators in a formula."""
@@ -288,9 +244,6 @@ class Not(UnaryNode):
         vals.append(self.op)
         return vals
 
-    def get_leaves(self):
-        return [self]
-
     def __lt__(self, other):
         if isinstance(other, Not):
             return self.val < other.val
@@ -334,9 +287,6 @@ class Or(BinaryNode):
         else:
             return False
 
-    def flip_atoms(self):
-        return Or(self.right, self.left)
-
     def __lt__(self, other):
         if isinstance(other, Or):
             return self.left < other.left or (
@@ -377,9 +327,6 @@ class And(BinaryNode):
 
     def __hash__(self):
         return hash(compute_hash_value(self))
-
-    def flip_atoms(self):
-        return And(self.right, self.left)
 
     def __lt__(self, other):
         if isinstance(other, And):
