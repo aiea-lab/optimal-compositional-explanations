@@ -29,18 +29,22 @@ def get_quantity(*, label_info, quantity_name, quantity_type, quantity_scope):
     Returns:
         torch.Tensor: The requested quantity.
     """
-    if quantity_type not in ["max", "min"]:
-        raise ValueError(f"Unknown quantity type: {quantity_type}")
     if quantity_scope not in ["sample", "sum"]:
         raise ValueError(f"Unknown quantity scope: {quantity_scope}")
     if quantity_name not in QUANTITIES:
         raise ValueError(f"Unknown quantity name: {quantity_name}")
 
     index_quantity = QUANTITIES.index(quantity_name)
-    index_type = INDEX_TUPLE_MAX if quantity_type == "max" else INDEX_TUPLE_MIN
     index_scope = INDEX_TUPLE_SAMPLE if quantity_scope == "sample" else INDEX_TUPLE_SUM
 
-    quantity = label_info[index_quantity][index_type][index_scope]
+    if quantity_name == "unique_extras" or quantity_name == "unique_intersection":
+        # For unique quantities, there is no max and min since they can be computed exactly
+        quantity = label_info[index_quantity][index_scope]
+    else:
+        if quantity_type not in ["max", "min"]:
+            raise ValueError(f"Unknown quantity type: {quantity_type}")
+        index_type = INDEX_TUPLE_MAX if quantity_type == "max" else INDEX_TUPLE_MIN
+        quantity = label_info[index_quantity][index_type][index_scope]
 
     return quantity
 
@@ -72,18 +76,17 @@ def get_concept_info(concept_quantities):
         (common_intersection, common_intersection_sum),
         (common_intersection, common_intersection_sum),
     )
-    tuple_unique_intersection = (
-        (unique_intersection, unique_intersection_sum),
-        (unique_intersection, unique_intersection_sum),
-    )
+    tuple_unique_intersection = (unique_intersection, unique_intersection_sum)
+
+
     tuple_common_extras = (
         (common_extras, common_extras_sum),
         (common_extras, common_extras_sum),
     )
-    tuple_unique_extras = (
-        (unique_extras, unique_extras_sum),
-        (unique_extras, unique_extras_sum),
-    )
+
+    tuple_unique_extras = (unique_extras, unique_extras_sum)
+
+    
     tuple_common_uncovered = (
         (common_uncovered, common_uncovered_sum),
         (common_uncovered, common_uncovered_sum),
@@ -444,7 +447,7 @@ def compute_min_iou_from_label_info(label_quantities, num_hits):
         quantity_type="min",
         quantity_scope="sum",
     )
-    min_unique_intersection_sum = get_quantity(
+    unique_intersection_sum = get_quantity(
         label_info=label_quantities,
         quantity_name="unique_intersection",
         quantity_type="min",
@@ -456,7 +459,7 @@ def compute_min_iou_from_label_info(label_quantities, num_hits):
         quantity_type="max",
         quantity_scope="sum",
     )
-    max_unique_extras_sum = get_quantity(
+    unique_extras_sum = get_quantity(
         label_info=label_quantities,
         quantity_name="unique_extras",
         quantity_type="max",
@@ -464,8 +467,8 @@ def compute_min_iou_from_label_info(label_quantities, num_hits):
     )
 
     # Min IoU
-    min_intersection = min_common_intersection_sum + min_unique_intersection_sum
-    max_union = num_hits + max_unique_extras_sum + max_common_extras_sum
+    min_intersection = min_common_intersection_sum + unique_intersection_sum
+    max_union = num_hits + unique_extras_sum + max_common_extras_sum
     min_iou = min_intersection / max_union
 
     return min_iou
@@ -486,7 +489,7 @@ def compute_max_iou_from_label_info(label_quantities, neuron_quantities, num_hit
         quantity_type="max",
         quantity_scope="sum",
     )
-    max_unique_intersection_sum = get_quantity(
+    unique_intersection_sum = get_quantity(
         label_info=label_quantities,
         quantity_name="unique_intersection",
         quantity_type="max",
@@ -498,7 +501,7 @@ def compute_max_iou_from_label_info(label_quantities, neuron_quantities, num_hit
         quantity_type="min",
         quantity_scope="sum",
     )
-    min_unique_extras_sum = get_quantity(
+    unique_extras_sum = get_quantity(
         label_info=label_quantities,
         quantity_name="unique_extras",
         quantity_type="min",
@@ -507,13 +510,13 @@ def compute_max_iou_from_label_info(label_quantities, neuron_quantities, num_hit
     _, _, (_, neuron_coverable_sum), _, _, _ = neuron_quantities
 
     max_label_common_intersection_sum = min(
-        max_common_intersection_sum + max_unique_intersection_sum, neuron_coverable_sum
+        max_common_intersection_sum + unique_intersection_sum, neuron_coverable_sum
     ).item()
     if max_label_common_intersection_sum == 0:
         return 0.0
     label_iou = (
         max_label_common_intersection_sum
-        / (num_hits + min_common_extras_sum + min_unique_extras_sum).item()
+        / (num_hits + min_common_extras_sum + unique_extras_sum).item()
     )
     return label_iou
 

@@ -30,16 +30,10 @@ def estimate_disjoint_label_info(label, *, left_quantities, right_quantities):
         return None
 
     # Left quantities
-    max_left_unique_intersection_sum = optimal_utils.get_quantity(
+    left_unique_intersection_sum = optimal_utils.get_quantity(
         label_info=left_quantities,
         quantity_name="unique_intersection",
         quantity_type="max",
-        quantity_scope="sum",
-    )
-    min_left_unique_intersection_sum = optimal_utils.get_quantity(
-        label_info=left_quantities,
-        quantity_name="unique_intersection",
-        quantity_type="min",
         quantity_scope="sum",
     )
     max_left_common_intersection_sum = optimal_utils.get_quantity(
@@ -66,32 +60,21 @@ def estimate_disjoint_label_info(label, *, left_quantities, right_quantities):
         quantity_type="min",
         quantity_scope="sum",
     )
-    max_left_unique_extras_sum = optimal_utils.get_quantity(
+    left_unique_extras_sum = optimal_utils.get_quantity(
         label_info=left_quantities,
         quantity_name="unique_extras",
         quantity_type="max",
-        quantity_scope="sum",
-    )
-    min_left_unique_extras_sum = optimal_utils.get_quantity(
-        label_info=left_quantities,
-        quantity_name="unique_extras",
-        quantity_type="min",
         quantity_scope="sum",
     )
 
     # Right quantities
-    max_right_unique_intersection_sum = optimal_utils.get_quantity(
+    right_unique_intersection_sum = optimal_utils.get_quantity(
         label_info=right_quantities,
         quantity_name="unique_intersection",
         quantity_type="max",
         quantity_scope="sum",
     )
-    min_right_unique_intersection_sum = optimal_utils.get_quantity(
-        label_info=right_quantities,
-        quantity_name="unique_intersection",
-        quantity_type="min",
-        quantity_scope="sum",
-    )
+
     max_right_common_intersection_sum = optimal_utils.get_quantity(
         label_info=right_quantities,
         quantity_name="common_intersection",
@@ -116,25 +99,17 @@ def estimate_disjoint_label_info(label, *, left_quantities, right_quantities):
         quantity_type="min",
         quantity_scope="sum",
     )
-    max_right_unique_extras_sum = optimal_utils.get_quantity(
+    right_unique_extras_sum = optimal_utils.get_quantity(
         label_info=right_quantities,
         quantity_name="unique_extras",
         quantity_type="max",
         quantity_scope="sum",
     )
-    min_right_unique_extras_sum = optimal_utils.get_quantity(
-        label_info=right_quantities,
-        quantity_name="unique_extras",
-        quantity_type="min",
-        quantity_scope="sum",
-    )
+
 
     # Since they are disjoint and the OR is additive, everything is just the sum of the two sides
-    max_unique_intersection_sum = (
-        max_left_unique_intersection_sum + max_right_unique_intersection_sum
-    )
-    min_unique_intersection_sum = (
-        min_left_unique_intersection_sum + min_right_unique_intersection_sum
+    unique_intersection_sum = (
+        left_unique_intersection_sum + right_unique_intersection_sum
     )
     max_common_intersection_sum = (
         max_left_common_intersection_sum + max_right_common_intersection_sum
@@ -143,30 +118,28 @@ def estimate_disjoint_label_info(label, *, left_quantities, right_quantities):
         min_left_common_intersection_sum + min_right_common_intersection_sum
     )
     if (
-        (max_unique_intersection_sum <= max_left_unique_intersection_sum)
+        (unique_intersection_sum <= left_unique_intersection_sum)
         and (max_common_intersection_sum <= max_left_common_intersection_sum)
-        and (min_unique_intersection_sum <= min_left_unique_intersection_sum)
         and (min_common_intersection_sum <= min_left_common_intersection_sum)
     ) or (
-        (max_unique_intersection_sum <= max_right_unique_intersection_sum)
+        (unique_intersection_sum <= right_unique_intersection_sum)
         and (max_common_intersection_sum <= max_right_common_intersection_sum)
-        and (min_unique_intersection_sum <= min_right_unique_intersection_sum)
         and (min_common_intersection_sum <= min_right_common_intersection_sum)
     ):
         # If one of the two side does not change to the intersection, we can discard this formula
         return None
 
-    min_unique_extras_sum = min_left_unique_extras_sum + min_right_unique_extras_sum
-    max_unique_extras_sum = max_left_unique_extras_sum + max_right_unique_extras_sum
+    unique_extras_sum = left_unique_extras_sum + right_unique_extras_sum
 
     min_common_extras_sum = min_left_common_extras_sum + min_right_common_extras_sum
     max_common_extras_sum = max_left_common_extras_sum + max_right_common_extras_sum
 
+    min_unique_extras_sum = unique_extras_sum
     return (
         ((None, max_common_intersection_sum), (None, min_common_intersection_sum)),
-        ((None, max_unique_intersection_sum), (None, min_unique_intersection_sum)),
+        (None, unique_intersection_sum),
         ((None, max_common_extras_sum), (None, min_common_extras_sum)),
-        ((None, max_unique_extras_sum), (None, min_unique_extras_sum)),
+        (None, min_unique_extras_sum),
         ((None, None), (None, None)),
         ((None, None), (None, None)),
     )
@@ -191,18 +164,13 @@ def estimate_label_info(label, *, left_quantities, right_quantities, neuron_quan
     _, common_space_extras_sum = common_space_extras_tuple
 
     # Left quantities
-    max_left_unique_intersection_sum = optimal_utils.get_quantity(
+    left_unique_intersection_sum = optimal_utils.get_quantity(
         label_info=left_quantities,
         quantity_name="unique_intersection",
         quantity_type="max",
         quantity_scope="sum",
     )
-    min_left_unique_intersection_sum = optimal_utils.get_quantity(
-        label_info=left_quantities,
-        quantity_name="unique_intersection",
-        quantity_type="min",
-        quantity_scope="sum",
-    )
+
     max_left_common_intersection_sum = optimal_utils.get_quantity(
         label_info=left_quantities,
         quantity_name="common_intersection",
@@ -227,30 +195,18 @@ def estimate_label_info(label, *, left_quantities, right_quantities, neuron_quan
         quantity_type="min",
         quantity_scope="sum",
     )
-    max_left_unique_extras_sum = optimal_utils.get_quantity(
+    left_unique_extras_sum = optimal_utils.get_quantity(
         label_info=left_quantities,
         quantity_name="unique_extras",
         quantity_type="max",
-        quantity_scope="sum",
-    )
-    min_left_unique_extras_sum = optimal_utils.get_quantity(
-        label_info=left_quantities,
-        quantity_name="unique_extras",
-        quantity_type="min",
         quantity_scope="sum",
     )
 
     # Right quantities
-    max_right_unique_intersection_sum = optimal_utils.get_quantity(
+    right_unique_intersection_sum = optimal_utils.get_quantity(
         label_info=right_quantities,
         quantity_name="unique_intersection",
         quantity_type="max",
-        quantity_scope="sum",
-    )
-    min_right_unique_intersection_sum = optimal_utils.get_quantity(
-        label_info=right_quantities,
-        quantity_name="unique_intersection",
-        quantity_type="min",
         quantity_scope="sum",
     )
     max_right_common_intersection_sum = optimal_utils.get_quantity(
@@ -277,16 +233,10 @@ def estimate_label_info(label, *, left_quantities, right_quantities, neuron_quan
         quantity_type="min",
         quantity_scope="sum",
     )
-    max_right_unique_extras_sum = optimal_utils.get_quantity(
+    right_unique_extras_sum = optimal_utils.get_quantity(
         label_info=right_quantities,
         quantity_name="unique_extras",
         quantity_type="max",
-        quantity_scope="sum",
-    )
-    min_right_unique_extras_sum = optimal_utils.get_quantity(
-        label_info=right_quantities,
-        quantity_name="unique_extras",
-        quantity_type="min",
         quantity_scope="sum",
     )
     max_right_common_uncovered_sum = optimal_utils.get_quantity(
@@ -299,15 +249,8 @@ def estimate_label_info(label, *, left_quantities, right_quantities, neuron_quan
     if isinstance(label, F.Or):
 
         # Unique elements are additive since they are disjoint
-        max_unique_intersection_sum = (
-            max_left_unique_intersection_sum + max_right_unique_intersection_sum
-        )
-        min_unique_intersection_sum = (
-            min_left_unique_intersection_sum + min_right_unique_intersection_sum
-        )
-
-        min_unique_extras_sum = min_left_unique_extras_sum + min_right_unique_extras_sum
-        max_unique_extras_sum = max_left_unique_extras_sum + max_right_unique_extras_sum
+        unique_intersection_sum = left_unique_intersection_sum + right_unique_intersection_sum
+        unique_extras_sum = left_unique_extras_sum + right_unique_extras_sum
 
         # Worst case scenario is assuming they are fully overlapping in the intersection
         min_common_intersection_sum = max(
@@ -321,13 +264,11 @@ def estimate_label_info(label, *, left_quantities, right_quantities, neuron_quan
         )
 
         if (
-            max_unique_intersection_sum <= max_left_unique_intersection_sum
-            and min_unique_intersection_sum <= min_left_unique_intersection_sum
+            unique_intersection_sum <= left_unique_intersection_sum
             and max_common_intersection_sum <= max_left_common_intersection_sum
             and min_common_intersection_sum <= min_left_common_intersection_sum
         ) or (
-            max_unique_intersection_sum <= max_right_unique_intersection_sum
-            and min_unique_intersection_sum <= min_right_unique_intersection_sum
+            unique_intersection_sum <= right_unique_intersection_sum
             and max_common_intersection_sum <= max_right_common_intersection_sum
             and min_common_intersection_sum <= min_right_common_intersection_sum
         ):
@@ -341,16 +282,13 @@ def estimate_label_info(label, *, left_quantities, right_quantities, neuron_quan
         max_common_extras_sum = min(
             common_space_extras_sum,
             max_left_common_extras_sum + max_right_common_extras_sum,
-        )  # min(max_size_mask - N^u - N^c - E_min^u(L) - E_min^u(c), E_max^c(L) + E_max^c(c))
+        )  # min(max_size_mask - N^u - N^c - E^u(L) - E^u(c), E_max^c(L) + E^c(c))
 
     elif isinstance(label, F.And) and isinstance(label.right, F.Not):
 
         # The AND NOT preserves all the unique elements of the left side, since the NOT cannot have overlap there (because we are considering unique elements)
-        max_unique_intersection_sum = max_left_unique_intersection_sum
-        min_unique_intersection_sum = min_left_unique_intersection_sum
-
-        min_unique_extras_sum = min_left_unique_extras_sum
-        max_unique_extras_sum = max_left_unique_extras_sum
+        unique_intersection_sum = left_unique_intersection_sum
+        unique_extras_sum = left_unique_extras_sum
 
         # Common Elements. AND NOT cannot increase common elements
         # Best case scenario is when they were disjoint in the common part. The negation would preserve all the common elements of the left side in this case
@@ -376,10 +314,10 @@ def estimate_label_info(label, *, left_quantities, right_quantities, neuron_quan
 
     elif isinstance(label, F.And):
         # The AND always zeroes the unique elements
-        min_unique_extras_sum = 0
-        max_unique_extras_sum = 0
-        max_unique_intersection_sum = 0
-        min_unique_intersection_sum = 0
+        unique_extras_sum = 0
+        unique_extras_sum = 0
+        unique_intersection_sum = 0
+        unique_intersection_sum = 0
 
         # Common Elements. AND  cannot increase common elements
         # Best case scenario is when they were fully overlapping in the common part. The intersection would preserve all the common elements in this case
@@ -396,8 +334,7 @@ def estimate_label_info(label, *, left_quantities, right_quantities, neuron_quan
         )
 
         if (
-            max_left_unique_extras_sum == 0
-            and min_left_unique_extras_sum == 0
+            left_unique_extras_sum == 0
             and max_left_common_extras_sum == 0
             and min_left_common_extras_sum == 0
         ):
@@ -416,9 +353,9 @@ def estimate_label_info(label, *, left_quantities, right_quantities, neuron_quan
 
     return (
         ((None, max_common_intersection_sum), (None, min_common_intersection_sum)),
-        ((None, max_unique_intersection_sum), (None, min_unique_intersection_sum)),
+        (None, unique_intersection_sum),
         ((None, max_common_extras_sum), (None, min_common_extras_sum)),
-        ((None, max_unique_extras_sum), (None, min_unique_extras_sum)),
+        (None, unique_extras_sum),
         ((None, None), (None, None)),
         ((None, None), (None, None)),
     )
@@ -462,18 +399,13 @@ def or_chain_estimation(
         quantity_type="min",
         quantity_scope="sum",
     )
-    max_unique_intersection_sum = optimal_utils.get_quantity(
+    unique_intersection_sum = optimal_utils.get_quantity(
         label_info=label_quantities,
         quantity_name="unique_intersection",
         quantity_type="max",
         quantity_scope="sum",
     )
-    min_unique_intersection_sum = optimal_utils.get_quantity(
-        label_info=label_quantities,
-        quantity_name="unique_intersection",
-        quantity_type="min",
-        quantity_scope="sum",
-    )
+
     max_common_extras_sum = optimal_utils.get_quantity(
         label_info=label_quantities,
         quantity_name="common_extras",
@@ -486,21 +418,15 @@ def or_chain_estimation(
         quantity_type="min",
         quantity_scope="sum",
     )
-    max_unique_extras_sum = optimal_utils.get_quantity(
+    unique_extras_sum = optimal_utils.get_quantity(
         label_info=label_quantities,
         quantity_name="unique_extras",
         quantity_type="max",
         quantity_scope="sum",
     )
-    min_unique_extras_sum = optimal_utils.get_quantity(
-        label_info=label_quantities,
-        quantity_name="unique_extras",
-        quantity_type="min",
-        quantity_scope="sum",
-    )
 
     # We discard the labels that cannot increase the IoU
-    if max_common_intersection_sum + max_unique_intersection_sum == 0:
+    if max_common_intersection_sum + unique_intersection_sum == 0:
         return (0.0, 0.0), (0.0, 0.0)
 
     # Compute potential improvement
@@ -543,7 +469,7 @@ def or_chain_estimation(
 
     # Max IoU Quantitites
     min_union = num_hits + max(
-        min_common_extras_sum + min_unique_extras_sum,
+        min_common_extras_sum + unique_extras_sum,
         bottom_1_common_extras_sum + bottom_1_unique_extras_sum,
     )
     max_intersection = min(
@@ -552,7 +478,7 @@ def or_chain_estimation(
             neuron_common_sum,
         )
         + min(
-            max_unique_intersection_sum + top_k_unique_intersection_sum,
+            unique_intersection_sum + top_k_unique_intersection_sum,
             neuron_unique_sum,
         ),
         neuron_coverable_sum,
@@ -561,7 +487,7 @@ def or_chain_estimation(
     # Min IoU Quantities
     min_intersection = max(
         min(
-            min_common_intersection_sum + min_unique_intersection_sum,
+            min_common_intersection_sum + unique_intersection_sum,
             neuron_coverable_sum,
         ),
         bottom_1_intersection_sum,
@@ -569,7 +495,7 @@ def or_chain_estimation(
     max_union = min(
         num_hits
         + min(max_common_extras_sum + top_k_common_extras_sum, common_space_extras_sum)
-        + min(max_unique_extras_sum + top_k_unique_extras_sum, unique_space_extras_sum),
+        + min(unique_extras_sum + top_k_unique_extras_sum, unique_space_extras_sum),
         tot_size,
     )
 
@@ -670,21 +596,16 @@ def and_not_chain_estimation(
         quantity_type="max",
         quantity_scope="sum",
     )
-    max_unique_intersection_sum = optimal_utils.get_quantity(
+    unique_intersection_sum = optimal_utils.get_quantity(
         label_info=label_quantities,
         quantity_name="unique_intersection",
         quantity_type="max",
         quantity_scope="sum",
     )
-    min_unique_extras_sum = optimal_utils.get_quantity(
-        label_info=label_quantities,
-        quantity_name="unique_extras",
-        quantity_type="min",
-        quantity_scope="sum",
-    )
+
 
     # We discard the labels that cannot increase the IoU
-    if max_common_intersection_sum + max_unique_intersection_sum == 0:
+    if max_common_intersection_sum + unique_intersection_sum == 0:
         return (0.0, 0.0), (0.0, 0.0)
 
     # Aux variables
@@ -693,19 +614,14 @@ def and_not_chain_estimation(
     neuron_coverable, neuron_coverable_sum = neuron_coverable_tuple
     tot_size = np.int64(max_size_mask * len(neuron_coverable))
     _, common_space_extras_sum = common_space_extras_tuple
-    min_unique_intersection_sum = optimal_utils.get_quantity(
-        label_info=label_quantities,
-        quantity_name="unique_intersection",
-        quantity_type="min",
-        quantity_scope="sum",
-    )
+
     max_common_extras_sum = optimal_utils.get_quantity(
         label_info=label_quantities,
         quantity_name="common_extras",
         quantity_type="max",
         quantity_scope="sum",
     )
-    max_unique_extras_sum = optimal_utils.get_quantity(
+    unique_extras_sum = optimal_utils.get_quantity(
         label_info=label_quantities,
         quantity_name="unique_extras",
         quantity_type="max",
@@ -714,18 +630,18 @@ def and_not_chain_estimation(
 
     # Max IoU
     max_intersection = min(
-        max_unique_intersection_sum + max_common_intersection_sum, neuron_coverable_sum
+        unique_intersection_sum + max_common_intersection_sum, neuron_coverable_sum
     )
-    min_union = num_hits + min_unique_extras_sum
+    min_union = num_hits + unique_extras_sum
 
     # Min IoU
     bottom_1_common_extras_sum = improv_common_extras[0][BOTTOM_INDEX_SUM]
     max_improv_common_extras_sum = min(
         max_common_extras_sum, common_space_extras_sum - bottom_1_common_extras_sum
     )
-    min_intersection = min_unique_intersection_sum
+    min_intersection = unique_intersection_sum
     max_union = min(
-        num_hits + max_unique_extras_sum + max_improv_common_extras_sum, tot_size
+        num_hits + unique_extras_sum + max_improv_common_extras_sum, tot_size
     )
 
     return (max_intersection, min_intersection), (max_union, min_union)
