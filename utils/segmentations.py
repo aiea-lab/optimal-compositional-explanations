@@ -202,7 +202,7 @@ def build_dense_label_array(label_data, key="number", allow_none=False):
         example = label_data[0]
 
         def make_empty(k):
-            return dict((c, k if c is key else type(v)()) for c, v in example.items())
+            return dict((c, k if c == key else type(v)()) for c, v in example.items())
 
         for i, d in enumerate(result):
             if d is None:
