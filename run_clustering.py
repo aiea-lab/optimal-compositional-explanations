@@ -76,6 +76,7 @@ def main(argv):
         )
         disjoint_info = None
     elif FLAGS.heuristic == "none":
+        disjoint_info = None
         masks_info = None
     else:
         raise ValueError(f"Unknown heuristic {FLAGS.heuristic}")
