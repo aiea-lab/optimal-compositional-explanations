@@ -159,12 +159,14 @@ class AnnotationsWrapper:
         if not os.path.exists(segmentation_dir):
             os.makedirs(segmentation_dir)
         if fast_impl:
+            print("Using fast implementation to compute the masks. If you have memory issues, set the 'fast_impl' flag to False.")
             # Collect segmentation masks for the whole dataset
             dataset_segmentations = []
             for data in tqdm(self.data_wrapper.data_loader, desc="Computing Segmentations"):
                 segmentations = self.data_wrapper.extract_segmentations(data)
                 dataset_segmentations.append(segmentations)
         else:
+            print("Using slow implementation to compute the masks. This may be slower but it requires less RAM. To enable the fast implementation, set the 'fast_impl' flag to True.")
             dataset_segmentations = None
 
         tot_concepts = len(self.concept_labels)
