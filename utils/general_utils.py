@@ -121,7 +121,7 @@ def get_grid_intersection(
     fire_and_label = bitmaps & label_mask
 
     # Sort the samples by coverage of the intersection between the bitmaps and the label mask
-    fire_cov_per_sample = bitmaps.sum(dim=1) / bitmaps.shape[1]
+    fire_cov_per_sample = fire_and_label.sum(dim=1) / fire_and_label.shape[1]
     _, sorted_indices = torch.sort(fire_cov_per_sample, descending=True)
 
     # Extract the candidate indices
