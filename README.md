@@ -2,8 +2,6 @@
 
 Official repository for the paper "Guaranteed Optimal Compositional Explanations for Neurons". Biagio La Rosa and Leilani H. Gilpin.
 
-This repository will be updated upon acceptance.
+This branch will be updated soon. A draft of the files is available in the `icml` branch, including the code for the experiments and the scripts to run them. The `main` branch will be updated with the final version of the code and scripts after the `icml` branch is fully finalized and merged. 
 
-The repository will include the full code and scripts to run the experiments.
 
-If you are interested in the topic and do not want to wait for acceptance, feel free to send an email to <a href="https://biagiomattialarosa.github.io/">Biagio La Rosa</a> to request private access to the code.
