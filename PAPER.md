@@ -49,7 +49,7 @@ This will populate:
 
 
 
-To run experiments on [Cityscapes](https://www.cityscapes-dataset.com/), download the dataset and prepare it as follows:
+To run experiments on [Cityscapes](https://www.cityscapes-dataset.com/), download `gtFine_trainvaltest.zip` and `leftImg8bit_trainvaltest.zip` from the [Cityscapes website](https://www.cityscapes-dataset.com/) (registration required), unzip them, and prepare the dataset as described in the instructions below.
 
 Expected data structure: 
 
