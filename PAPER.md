@@ -35,20 +35,9 @@ This downloads all probed models.
 
 
 #### Datasets
-To run experiments on Broden:
-
-```bash
-bash scripts/download_broden.sh
-```
-
-This will populate:
-
-- `data/model/zoo/` with Places365 checkpoints
-- `datasets/data/broden1_224` and `datasets/data/broden1_227`
 
 
-
-
+##### Low Complexity Settings
 To run experiments on [Cityscapes](https://www.cityscapes-dataset.com/), download `gtFine_trainvaltest.zip` and `leftImg8bit_trainvaltest.zip` from the [Cityscapes website](https://www.cityscapes-dataset.com/) (registration required), unzip them, and prepare the dataset as described in the instructions below.
 
 Expected data structure: 
@@ -73,6 +62,12 @@ To create labelTrainIds.png, first prepare the above structure, then clone the f
 ```
 git clone https://github.com/mcordts/cityscapesScripts.git
 ```
+
+Move inside the cloned repo and install the package:
+```
+pip install -e .
+```
+
 Export the path where the citiscapes dataset is stored
 ```
 export CITYSCAPES_DATASET=/path/to/abovementioned/cityscapes 
@@ -82,8 +77,8 @@ Finally, run cityscapesescript with:
 python cityscapesscripts/preparation/createTrainIdLabelImgs.py
 ```
 
-
-To run experiments on [ADE20k-847](https://groups.csail.mit.edu/vision/datasets/ADE20K/), download the dataset and prepare it as follows:
+##### Intermediate Complexity Settings
+To run experiments on [ADE20k-847](https://groups.csail.mit.edu/vision/datasets/ADE20K/), download the dataset from https://groups.csail.mit.edu/vision/datasets/ADE20K/ or from https://www.kaggle.com/datasets/kallurivasanthsai/ade20k-2021-17-01, unzip the dataset, and prepare it as follows:
 
 Expected data structure:
 
@@ -100,11 +95,24 @@ datasets/
 			annotations_detectron2/
 				validation/
 ```
-Download the data of ADE20k-Full from https://groups.csail.mit.edu/vision/datasets/ADE20K/ or from https://www.kaggle.com/datasets/kallurivasanthsai/ade20k-2021-17-01
-Unzip the dataset and generate the labels for testing.
+
+Then, generate the labels for testing by excuting the following script:
 ```
 python datasets/prepare_ade20k_full.py
 ```
+
+##### High Complexity Settings
+To run experiments on Broden:
+
+```bash
+bash scripts/download_broden.sh
+```
+
+This will populate:
+
+- `data/model/zoo/` with Places365 checkpoints
+- `datasets/data/broden1_224` and `datasets/data/broden1_227`
+
 
 ## Step 3: Set Detectron2 Variable
 the Detectron2 datasets require the `DETECTRON2_DATASETS` variable to be set to the directory where the datasets are stored.
