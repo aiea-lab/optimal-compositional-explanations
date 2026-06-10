@@ -89,7 +89,7 @@ class AnnotationsWrapper:
             segmentations = self.data_wrapper.extract_segmentations(data)
             dataset_segmentations.append(segmentations)
 
-        # Create a dictionary to store the disjoint information
+        # Create a matrix to store the disjoint information
         disjoint_matrix = np.ones(
             (len(self.concept_labels), len(self.concept_labels)), dtype=bool
         )
