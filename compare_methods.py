@@ -61,24 +61,29 @@ def main(argv):
     selected_units = sorted(selected_units)
 
     # Load Explanations from different heuristics
+    print("Loading explanations for different heuristics")
+    print("\nLoading M-MESH explanations")
     mmesh_compo_exp = get_explanations(
         layer_activations=layer_activations,
         units=selected_units,
         cfg=cfg,
         heuristic="mmesh",
     )
+    print("\nLoading Optimal explanations")
     optimal_compo_exp = get_explanations(
         layer_activations=layer_activations,
         units=selected_units,
         cfg=cfg,
         heuristic="optimal",
     )
+    print("\nLoading Our Beam explanations")
     beam_optimal_compo_exp = get_explanations(
         layer_activations=layer_activations,
         units=selected_units,
         cfg=cfg,
         heuristic="beam_optimal",
     )
+    print("\nLoading Vanilla explanations")
     vanilla_compo_exp = get_explanations(
         layer_activations=layer_activations,
         units=selected_units,
@@ -118,8 +123,6 @@ def main(argv):
 
     num_diff = 0
     total_meaningful = 0
-    same_concepts_diff_iou = 0
-    same_concepts_equal_iou = 0
 
     # Optimal Categories
     units_cat_1 = (
@@ -130,6 +133,10 @@ def main(argv):
     )  # different formula, same concepts, different iou (optimal better than mmesh)
     units_cat_3 = []  # different formula, same concepts, same iou
 
+    print()
+    print("Extracting stats for each unit and comparing explanations...")
+    print()
+    print("Units associated with different explanations:")
     for index in range(len(selected_units)):
         (
             unit,
@@ -229,12 +236,10 @@ def main(argv):
                 atoms_optimal = optimal_label.get_vals()
                 if set(atoms_beam) == set(atoms_optimal):
                     if optimal_iou != beam_iou:
-                        same_concepts_diff_iou += 1
                         beam_iou_same_concepts_diff_iou.append(beam_iou)
                         optimal_iou_same_concepts_diff_iou.append(optimal_iou)
                         units_cat_2.append(unit)
                     else:
-                        same_concepts_equal_iou += 1
                         units_cat_3.append(unit)
                     print(
                         f"Same Concepts different formula for Unit {unit} Cluster {cluster_index} - Beam: {beam_string_label} {mmesh_label} ({mmesh_iou}) - Optimal: {optimal_string_label} {optimal_label} ({optimal_iou})"
@@ -259,6 +264,9 @@ def main(argv):
                 num_diff += 1
 
     # PRINT SUMMARY STATS
+    print("*******************************************************************")
+    print("EXPLANATION STATS")
+    print()
     print(f"Number of different results: {num_diff} out of {total_meaningful} units")
     if len(beam_ious) > 0 and len(optimal_ious) > 0:
         print(
@@ -269,80 +277,88 @@ def main(argv):
         )
         print(f"Category 1: Different formula, different concepts, different iou")
         print(
-            f"\t: {(len(optimal_ious)- same_concepts_diff_iou - same_concepts_equal_iou)/len(optimal_ious)}"
+            f"\t Percentage: {len(units_cat_1)/len(optimal_ious)}"
         )
-        print(f"Units with different formulas and ious: {units_cat_1}")
-        print(
-            f"IoU different formula different concepts - Beam Average IoU over {len(beam_iou_diff_concepts_diff_iou)}: {np.mean(beam_iou_diff_concepts_diff_iou):.4f} - Standard Deviation: {np.std(beam_iou_diff_concepts_diff_iou):.4f}"
-        )
-        print(
-            f"IoU different formula different concepts - Optimal Average IoU over {len(optimal_iou_diff_concepts_diff_iou)}: {np.mean(optimal_iou_diff_concepts_diff_iou):.4f} - Standard Deviation: {np.std(optimal_iou_diff_concepts_diff_iou):.4f}"
-        )
+        if len(units_cat_1) > 0:
+            print(
+                f"\t Beam Average IoU: {np.mean(beam_iou_diff_concepts_diff_iou):.4f} - Standard Deviation: {np.std(beam_iou_diff_concepts_diff_iou):.4f}"
+            )
+            print(
+                f"\t Optimal Average IoU: {np.mean(optimal_iou_diff_concepts_diff_iou):.4f} - Standard Deviation: {np.std(optimal_iou_diff_concepts_diff_iou):.4f}"
+            )
         print(f"Category 2: Different formula, same concepts, different iou")
         print(f"\t Percentage: {len(units_cat_2)/len(optimal_ious)}")
-        print(f"\t Units: {units_cat_2}")
-        print(
-            f"IoU same concepts different iou - Beam Average IoU over {len(beam_iou_same_concepts_diff_iou)}: {np.mean(beam_iou_same_concepts_diff_iou):.4f} - Standard Deviation: {np.std(beam_iou_same_concepts_diff_iou):.4f}"
-        )
-        print(
-            f"IoU same concepts different iou - Optimal Average IoU over {len(optimal_iou_same_concepts_diff_iou)}: {np.mean(optimal_iou_same_concepts_diff_iou):.4f} - Standard Deviation: {np.std(optimal_iou_same_concepts_diff_iou):.4f}"
-        )
-        print(
-            f"Number of times C same concepts same iou and different formula: {same_concepts_equal_iou/len(optimal_ious)}"
-        )
-        print(f"Units with same concepts same iou and different formula: {units_cat_3}")
-        print(
-            f"Units where different from optimal: {units_cat_1+units_cat_2+units_cat_3}"
-        )
+        if len(units_cat_2) > 0:
+            print(units_cat_2)
+            print(beam_iou_same_concepts_diff_iou)
+            print(optimal_iou_same_concepts_diff_iou)
+            print(
+                f"\t Beam Average IoU: {np.mean(beam_iou_same_concepts_diff_iou):.4f} - Standard Deviation: {np.std(beam_iou_same_concepts_diff_iou):.4f}"
+            )
+            print(
+                f"\t Optimal Average IoU: {np.mean(optimal_iou_same_concepts_diff_iou):.4f} - Standard Deviation: {np.std(optimal_iou_same_concepts_diff_iou):.4f}"
+            )
+        
+        print(f"Category 3: Different formula, same concepts, same iou")
+        print(f"\t Percentage: {len(units_cat_3)/len(optimal_ious)}")
+    print()
+    print("*******************************************************************")
+    print("PERFORMANCE STATS")
+    print()
     print(f"Total Units: {len(selected_units)}")
-    print(
-        f"Optimal Average Visited over {len(optimal_total_visited)}: {np.mean(optimal_total_visited):.2f} - Standard Deviation: {np.std(optimal_total_visited):.2f}"
-    )
-    print(
-        f"Optimal Average Expanded over {len(optimal_total_expanded)}: {np.mean(optimal_total_expanded):.2f} - Standard Deviation: {np.std(optimal_total_expanded):.2f}"
-    )
-    print(
-        f"Optimal Average Estimated over {len(optimal_total_estimated)}: {np.mean(optimal_total_estimated):.2f} - Standard Deviation: {np.std(optimal_total_estimated):.2f}"
-    )
-    print(
-        f"Optimal Average Time over {len(optimal_total_time)}: {np.mean(optimal_total_time):.2f} seconds - Standard Deviation: {np.std(optimal_total_time):.2f} seconds"
-    )
-    print(
-        f"Beam Optimal Average Visited over {len(beam_optimal_total_visited)}: {np.mean(beam_optimal_total_visited):.2f} - Standard Deviation: {np.std(beam_optimal_total_visited):.2f}"
-    )
-    print(
-        f"Beam Optimal Average Expanded over {len(beam_optimal_total_expanded)}: {np.mean(beam_optimal_total_expanded):.2f} - Standard Deviation: {np.std(beam_optimal_total_expanded):.2f}"
-    )
-    print(
-        f"Beam Optimal Average Estimated over {len(beam_optimal_total_estimated)}: {np.mean(beam_optimal_total_estimated):.2f} - Standard Deviation: {np.std(beam_optimal_total_estimated):.2f}"
-    )
-    print(
-        f"Beam Optimal Average Time over {len(beam_optimal_total_time)}: {np.mean(beam_optimal_total_time):.2f} seconds - Standard Deviation: {np.std(beam_optimal_total_time):.2f} seconds"
-    )
-    print(
-        f"M-MESH Average Visited over {len(mmesh_total_visited)}: {np.mean(mmesh_total_visited):.2f} - Standard Deviation: {np.std(mmesh_total_visited):.2f}"
-    )
-    print(
-        f"M-MESH Average Expanded over {len(mmesh_total_expanded)}: {np.mean(mmesh_total_expanded):.2f} - Standard Deviation: {np.std(mmesh_total_expanded):.2f}"
-    )
-    print(
-        f"M-MESH Average Estimated over {len(mmesh_total_estimated)}: {np.mean(mmesh_total_estimated):.2f} - Standard Deviation: {np.std(mmesh_total_estimated):.2f}"
-    )
-    print(
-        f"M-MESH Average Time over {len(mmesh_total_time)}: {np.mean(mmesh_total_time):.2f} seconds - Standard Deviation: {np.std(mmesh_total_time):.2f} seconds"
-    )
-    print(
-        f"Vanilla Average Visited over {len(vanilla_total_visited)}: {np.mean(vanilla_total_visited):.2f} - Standard Deviation: {np.std(vanilla_total_visited):.2f}"
-    )
-    print(
-        f"Vanilla Average Expanded over {len(vanilla_total_expanded)}: {np.mean(vanilla_total_expanded):.2f} - Standard Deviation: {np.std(vanilla_total_expanded):.2f}"
-    )
-    print(
-        f"Vanilla Average Estimated over {len(vanilla_total_estimated)}: {np.mean(vanilla_total_estimated):.2f} - Standard Deviation: {np.std(vanilla_total_estimated):.2f}"
-    )
-    print(
-        f"Vanilla Average Time over {len(vanilla_total_time)}: {np.mean(vanilla_total_time):.2f} seconds - Standard Deviation: {np.std(vanilla_total_time):.2f} seconds"
-    )
+    if len(optimal_ious) > 0:
+        print(
+            f"Optimal Average Visited over {len(optimal_total_visited)}: {np.mean(optimal_total_visited):.2f} - Standard Deviation: {np.std(optimal_total_visited):.2f}"
+        )
+        print(
+            f"Optimal Average Expanded over {len(optimal_total_expanded)}: {np.mean(optimal_total_expanded):.2f} - Standard Deviation: {np.std(optimal_total_expanded):.2f}"
+        )
+        print(
+            f"Optimal Average Estimated over {len(optimal_total_estimated)}: {np.mean(optimal_total_estimated):.2f} - Standard Deviation: {np.std(optimal_total_estimated):.2f}"
+        )
+        print(
+            f"Optimal Average Time over {len(optimal_total_time)}: {np.mean(optimal_total_time):.2f} seconds - Standard Deviation: {np.std(optimal_total_time):.2f} seconds"
+        )
+    if len(beam_optimal_total_visited) > 0:
+        print(
+            f"Beam Optimal Average Visited over {len(beam_optimal_total_visited)}: {np.mean(beam_optimal_total_visited):.2f} - Standard Deviation: {np.std(beam_optimal_total_visited):.2f}"
+        )
+        print(
+            f"Beam Optimal Average Expanded over {len(beam_optimal_total_expanded)}: {np.mean(beam_optimal_total_expanded):.2f} - Standard Deviation: {np.std(beam_optimal_total_expanded):.2f}"
+        )
+        print(
+            f"Beam Optimal Average Estimated over {len(beam_optimal_total_estimated)}: {np.mean(beam_optimal_total_estimated):.2f} - Standard Deviation: {np.std(beam_optimal_total_estimated):.2f}"
+        )
+        print(
+            f"Beam Optimal Average Time over {len(beam_optimal_total_time)}: {np.mean(beam_optimal_total_time):.2f} seconds - Standard Deviation: {np.std(beam_optimal_total_time):.2f} seconds"
+        )
+    if len(mmesh_total_visited) > 0:
+        print(
+            f"M-MESH Average Visited over {len(mmesh_total_visited)}: {np.mean(mmesh_total_visited):.2f} - Standard Deviation: {np.std(mmesh_total_visited):.2f}"
+        )
+        print(
+            f"M-MESH Average Expanded over {len(mmesh_total_expanded)}: {np.mean(mmesh_total_expanded):.2f} - Standard Deviation: {np.std(mmesh_total_expanded):.2f}"
+        )
+        print(
+            f"M-MESH Average Estimated over {len(mmesh_total_estimated)}: {np.mean(mmesh_total_estimated):.2f} - Standard Deviation: {np.std(mmesh_total_estimated):.2f}"
+        )
+        print(
+            f"M-MESH Average Time over {len(mmesh_total_time)}: {np.mean(mmesh_total_time):.2f} seconds - Standard Deviation: {np.std(mmesh_total_time):.2f} seconds"
+        )
+    if len(vanilla_total_visited) > 0:
+    
+        print(
+            f"Vanilla Average Visited over {len(vanilla_total_visited)}: {np.mean(vanilla_total_visited):.2f} - Standard Deviation: {np.std(vanilla_total_visited):.2f}"
+        )
+        print(
+            f"Vanilla Average Expanded over {len(vanilla_total_expanded)}: {np.mean(vanilla_total_expanded):.2f} - Standard Deviation: {np.std(vanilla_total_expanded):.2f}"
+        )
+        print(
+            f"Vanilla Average Estimated over {len(vanilla_total_estimated)}: {np.mean(vanilla_total_estimated):.2f} - Standard Deviation: {np.std(vanilla_total_estimated):.2f}"
+        )
+        print(
+            f"Vanilla Average Time over {len(vanilla_total_time)}: {np.mean(vanilla_total_time):.2f} seconds - Standard Deviation: {np.std(vanilla_total_time):.2f} seconds"
+        )
 
 
 if __name__ == "__main__":

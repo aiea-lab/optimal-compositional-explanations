@@ -309,6 +309,5 @@ def load_compositional_explanations(*, activations, units, config):
                     time_taken,
                 )
             )
-    print(f"Units with missing explanations: {len(not_found)}")
-    print(f"Units with explanations: {len(results)}")
+    print(f"Units with missing explanations: {len(not_found)} over {len(results)}")
     return results
