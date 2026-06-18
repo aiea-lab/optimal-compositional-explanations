@@ -143,7 +143,7 @@ These are the main commands needed to reproduce the paper's core numerical resul
 
 For each of these, first run `run_clustering.py` with the appropriate flags, then run `compare_methods.py` with the exact same flags to get summary statistics.
 
-### Table 2 
+### Table 2, Table 5, Table 6, Table 7
 
 To run experiments for Tables 2-7:
 ```bash
@@ -153,11 +153,13 @@ python3 run_clustering.py \
 	--num_clusters=1 \
 	--random_units=50
 ```
-Replace \<DATASET> and \<ALGORITHM> with the appropriate values:
+Replace \<DATASET>, \<ALGORITHM>, \<MODEL>, and \<LAYER> with the appropriate values:
 
 (1) \<DATASET>: use `cityscapes_fine_sem_seg_val` for low complexity, `ade20k_full_sem_seg_freq_val_all` for intermediate complexity, or `broden` for the highest complexity setting.
 
 (2) \<ALGORITHM>: use `optimal`, `beam_optimal`, `mmesh`, or `none` to run the optimal algorithm, the beam variant using our sample heuristic, M-MESH, or vanilla beam search, respectively.
+
+(3) \<MODEL> and \<LAYER>: use `resnet18` and `layer4` for ResNet-18, `alexnet` and `features` for AlexNet, and `densenet161` and `features` for DenseNet-161.
 
 Then run `compare_methods.py` with the same flags to get summary statistics:
 ```bash
@@ -167,9 +169,9 @@ python3 compare_methods.py \
 	--random_units=50
 ```
 
-### Table 3 to Table 7 
+### Table 3 and Table 4 
 
-To run experiments for Tables 3-7:
+To run experiments for Tables 3 and 4 over all the units (and not only random 50 as in the other tables):
 ```bash
 python3 run_clustering.py \
 	--dataset=<DATASET> \
@@ -177,7 +179,6 @@ python3 run_clustering.py \
 	--num_clusters=1 \
 	--model=<MODEL> \
 	--layer=<LAYER> \
-	--random_units=50
 ```
 Replace \<DATASET>, \<ALGORITHM>, \<MODEL>, and \<LAYER> with the appropriate values:
 
@@ -194,7 +195,6 @@ python3 compare_methods.py \
 	--num_clusters=1 \
 	--model=<MODEL> \
 	--layer=<LAYER> \
-	--random_units=50
 ```
 
 ### Table 8
