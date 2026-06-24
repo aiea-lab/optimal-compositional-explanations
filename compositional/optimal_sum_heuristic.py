@@ -117,17 +117,6 @@ def estimate_disjoint_label_info(label, *, left_quantities, right_quantities):
     min_common_intersection_sum = (
         min_left_common_intersection_sum + min_right_common_intersection_sum
     )
-    if (
-        (unique_intersection_sum <= left_unique_intersection_sum)
-        and (max_common_intersection_sum <= max_left_common_intersection_sum)
-        and (min_common_intersection_sum <= min_left_common_intersection_sum)
-    ) or (
-        (unique_intersection_sum <= right_unique_intersection_sum)
-        and (max_common_intersection_sum <= max_right_common_intersection_sum)
-        and (min_common_intersection_sum <= min_right_common_intersection_sum)
-    ):
-        # If one of the two side does not change to the intersection, we can discard this formula
-        return None
 
     unique_extras_sum = left_unique_extras_sum + right_unique_extras_sum
 

@@ -350,17 +350,6 @@ def estimate_label_info(label, left_quantities, right_quantities, neuron_quantit
             max_left_common_intersection + max_right_common_intersection, neuron_common
         )
 
-        if (
-            unique_intersection_sum <= left_unique_intersection_sum
-            and np.all(max_common_intersection <= max_left_common_intersection)
-            and np.all(min_common_intersection <= min_left_common_intersection)
-        ) or (
-            unique_intersection_sum <= right_unique_intersection_sum
-            and np.all(max_common_intersection <= max_right_common_intersection)
-            and np.all(min_common_intersection <= min_right_common_intersection)
-        ):
-            # If one of the two side does not change to the intersection, we can discard this formula
-            return None
 
         # OR simply sums the unique elements
         unique_extras = left_unique_extras + right_unique_extras # E^u(L) + E^u(c)
