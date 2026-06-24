@@ -183,8 +183,10 @@ def extract_max_min_quantity_improvement(
     sorted_quantity = -np.sort(-sum_quantity)
 
     # For each sample, extract the top-k and bottom-k values for each quantity (per sample)
-    topk_quantity = np.partition(quantity_vector, -length, axis=0)[-length:]
-    bottom_quantity = np.partition(quantity_vector, length - 1, axis=0)[:length]
+    topk_indices = np.argsort(-quantity_vector.sum(axis=1))[:length]
+    topk_quantity = quantity_vector[topk_indices] 
+    bottom_indices = np.argsort(quantity_vector.sum(axis=1))[:length]
+    bottom_quantity = quantity_vector[bottom_indices]
 
     # For each length of explanation, compute the maximum and minimum improvement
     max_min_improvement_lens = []
