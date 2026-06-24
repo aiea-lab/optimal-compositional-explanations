@@ -22,7 +22,11 @@ def is_in(op, list_of_lists):
     Returns:
         bool: True if the operation is found in any of the lists, False otherwise.
     """
-    return any(op in lst for lst in list_of_lists)
+    if isinstance(op, (list, tuple, set)):
+        required_ops = set(op)
+        return any(required_ops.issubset(set(path)) for path in list_of_lists)
+
+    return any(op in path for path in list_of_lists)
 
 
 def max_min_iou_from_union_intersection(
