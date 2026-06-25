@@ -52,7 +52,7 @@ def get_dataset(cfg):
             broden_version=1,
         )
     else:
-        raise NotImplementedError(f"Dataset {dataset_name} not suuported yet")
+        raise NotImplementedError(f"Dataset {dataset_name} not supported yet")
 
 
 class DatasetWrapper:
@@ -72,7 +72,7 @@ class DetectronWrapper(DatasetWrapper):
         if dataset_name in DatasetCatalog:
             self.dataset = DatasetCatalog.get(dataset_name)
         else:
-            raise NotImplementedError(f"Dataset {dataset_name} not suuported yet")
+            raise NotImplementedError(f"Dataset {dataset_name} not supported yet")
         self.concept_labels = MetadataCatalog.get(dataset_name).stuff_classes.copy()
         self.data_loader = build_detection_test_loader(
             self.dataset,
