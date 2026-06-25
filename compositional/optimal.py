@@ -647,7 +647,7 @@ def perform_search(
     visited_nodes = 0
 
     # Aux
-    best_results = (0.0, None)  # (IoU, label)
+    best_results = (-1.0, None)  # (IoU, label)
     recent_nodes = []
     visited = []
     recent_e_iou = 2
@@ -781,90 +781,91 @@ def perform_search(
                 visited_nodes += 1
                 visited.append(label_node)
 
-                # Update the results and the minimum threshold if needed
-                if label_iou > best_results[0]:
-                    best_results = (label_iou, label_node)
-                elif label_iou == best_results[0]:
-                    if len(label_node) < len(best_results[1]):
-                        # We prefer shorter labels in case of equal IoU
+                if label_iou > 0:
+                    # Update the results and the minimum threshold if needed
+                    if label_iou > best_results[0]:
                         best_results = (label_iou, label_node)
-                if label_iou > minimum_threshold:
-                    minimum_threshold = label_iou
-                    current_frontier = reduce_frontier(
-                        current_frontier, minimum_threshold
+                    elif label_iou == best_results[0]:
+                        if len(label_node) < len(best_results[1]):
+                            # We prefer shorter labels in case of equal IoU
+                            best_results = (label_iou, label_node)
+                    if label_iou > minimum_threshold:
+                        minimum_threshold = label_iou
+                        current_frontier = reduce_frontier(
+                            current_frontier, minimum_threshold
+                        )
+
+                    #################### PROPAGATION ################################
+                    # Compute the info for ancestors
+                    ancestors_info = {}
+                    for ancestor, ancestor_mask in tree_formula_masks.items():
+                        if ancestor == label_node or ancestor in label_mapping.keys():
+                            # We already have these quantities
+                            continue
+                        else:
+                            ancestor_mask = ancestor_mask.to(bitmaps.device)
+                            ancestor_info, ancestor_iou = (
+                                optimal_utils.compute_label_info_and_iou_from_mask(
+                                    ancestor_mask,
+                                    bitmaps=bitmaps,
+                                    heuristic_info=heuristic_info,
+                                    num_hits=num_hits,
+                                )
+                            )
+                            # Add ancestor to visited nodes
+                            visited.append(ancestor)
+                            visited_nodes += 1
+
+                            # Update the results and the minimum threshold if needed
+                            if ancestor_iou > best_results[0]:
+                                best_results = (ancestor_iou, ancestor)
+                            elif ancestor_iou == best_results[0]:
+                                if len(ancestor) < len(best_results[1]):
+                                    # We prefer shorter labels in case of equal IoU
+                                    best_results = (ancestor_iou, ancestor)
+                            if ancestor_iou > minimum_threshold:
+                                minimum_threshold = ancestor_iou
+                                current_frontier = reduce_frontier(
+                                    current_frontier, minimum_threshold
+                                )
+                            ancestors_info[ancestor] = ancestor_info
+
+                    # Propagate the information to other nodes
+                    if len(label_node) < length:
+                        # If the label is at maximum length, there is no need to record its info and backpropagate them
+                        ancestors_info[label_node] = label_info
+
+                    # We compute temporary heuristic info and label mapping to update the frontier with the new info from ancestors.
+                    # We do not store them in the standard heuristic info and label mapping to avoid memory issues on extreme cases where
+                    # there is large exploration of the state space.
+                    # To speed up the process you can consider to replace the temp with the standard ones
+                    temp_heuristic_info, temp_label_mapping = (
+                        optimal_utils.update_heuristic_info(
+                            nodes_info=ancestors_info,
+                            heuristic_info=heuristic_info,
+                            label_mapping=label_mapping,
+                            max_length=length,
+                        )
                     )
 
-                #################### PROPAGATION ################################
-                # Compute the info for ancestors
-                ancestors_info = {}
-                for ancestor, ancestor_mask in tree_formula_masks.items():
-                    if ancestor == label_node or ancestor in label_mapping.keys():
-                        # We already have these quantities
-                        continue
-                    else:
-                        ancestor_mask = ancestor_mask.to(bitmaps.device)
-                        ancestor_info, ancestor_iou = (
-                            optimal_utils.compute_label_info_and_iou_from_mask(
-                                ancestor_mask,
-                                bitmaps=bitmaps,
-                                heuristic_info=heuristic_info,
-                                num_hits=num_hits,
-                            )
-                        )
-                        # Add ancestor to visited nodes
-                        visited.append(ancestor)
-                        visited_nodes += 1
-
-                        # Update the results and the minimum threshold if needed
-                        if ancestor_iou > best_results[0]:
-                            best_results = (ancestor_iou, ancestor)
-                        elif ancestor_iou == best_results[0]:
-                            if len(ancestor) < len(best_results[1]):
-                                # We prefer shorter labels in case of equal IoU
-                                best_results = (ancestor_iou, ancestor)
-                        if ancestor_iou > minimum_threshold:
-                            minimum_threshold = ancestor_iou
-                            current_frontier = reduce_frontier(
-                                current_frontier, minimum_threshold
-                            )
-                        ancestors_info[ancestor] = ancestor_info
-
-                # Propagate the information to other nodes
-                if len(label_node) < length:
-                    # If the label is at maximum length, there is no need to record its info and backpropagate them
-                    ancestors_info[label_node] = label_info
-
-                # We compute temporary heuristic info and label mapping to update the frontier with the new info from ancestors.
-                # We do not store them in the standard heuristic info and label mapping to avoid memory issues on extreme cases where
-                # there is large exploration of the state space.
-                # To speed up the process you can consider to replace the temp with the standard ones
-                temp_heuristic_info, temp_label_mapping = (
-                    optimal_utils.update_heuristic_info(
-                        nodes_info=ancestors_info,
-                        heuristic_info=heuristic_info,
-                        label_mapping=label_mapping,
+                    # Update the frontier with the new info from ancestors
+                    current_frontier, new_minimum_threshold = update_frontier_by_ancestors(
+                        current_frontier,
+                        ancestors_info.keys(),
+                        threshold=minimum_threshold,
+                        label_mapping=temp_label_mapping,
+                        heuristic_info=temp_heuristic_info,
+                        max_min_improvement=max_min_improvement,
+                        disjoint_info=disjoint_info,
+                        num_hits=num_hits,
+                        max_size_mask=max_size_mask,
                         max_length=length,
                     )
-                )
-
-                # Update the frontier with the new info from ancestors
-                current_frontier, new_minimum_threshold = update_frontier_by_ancestors(
-                    current_frontier,
-                    ancestors_info.keys(),
-                    threshold=minimum_threshold,
-                    label_mapping=temp_label_mapping,
-                    heuristic_info=temp_heuristic_info,
-                    max_min_improvement=max_min_improvement,
-                    disjoint_info=disjoint_info,
-                    num_hits=num_hits,
-                    max_size_mask=max_size_mask,
-                    max_length=length,
-                )
-                if new_minimum_threshold > minimum_threshold:
-                    minimum_threshold = new_minimum_threshold
-                    current_frontier = reduce_frontier(
-                        current_frontier, minimum_threshold
-                    )
+                    if new_minimum_threshold > minimum_threshold:
+                        minimum_threshold = new_minimum_threshold
+                        current_frontier = reduce_frontier(
+                            current_frontier, minimum_threshold
+                        )
 
             done = len(current_frontier) == 0
             continue
