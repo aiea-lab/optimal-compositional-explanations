@@ -699,7 +699,7 @@ def perform_search(
             )
             if new_max < -e_node:
                 # If the estimate is lower than the previous one
-                if new_max > minimum_threshold:
+                if new_max >= minimum_threshold:
                     # we update it and reinsert the node in the frontier
                     heapq.heappush(
                         current_frontier,
@@ -730,7 +730,7 @@ def perform_search(
             # If the new estimate is lower than the previous one we update it
             # and reinsert the node in the frontier. Otherwise, we keep analyzing the previous node
             if new_max < -e_node:
-                if new_max > minimum_threshold:
+                if new_max >= minimum_threshold:
                     # If the estimate is lower than the previous one we update it and reinsert the node in the frontier
                     heapq.heappush(
                         current_frontier,
