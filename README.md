@@ -9,6 +9,10 @@ The repository includes:
 - utilities for comparing optimal and non-optimal explanations,
 - scripts for reproducing the analyses presented in the paper.
 
+We also release a Python package for easy integration into other projects including both the optimal compositional explanations and the beam-search explanations. The package can be installed via pip:
+```
+pip install compositional_explanations
+```
 
 
 ## Contributions and their Implementation
@@ -93,10 +97,20 @@ The repository also includes the implementation of M-MESH in the `compositional/
 
 ## Quick Start
 
-### Setup the environment
+### Option 1: Use the Python package
+The easiest way to use the algorithms is to install the package via pip:
+```
+pip install compositional_explanations
+```
+
+In the home directory of the repository (https://pypi.org/project/compositional-explanations/), you can find the documentation for the package, including an usage example.
+
+### Option 2: Use this repository
+
+#### Setup the environment
 Follow step 1, 2, and 3 described in <a href="PAPER.md">PAPER.md</a> to set up the environment and download the required assets.
 
-### Main CLI Flags
+#### Main CLI Flags
 All the scripts share a set of user arguments that define the configuration for which explanations are generated.
 
 Common flags are defined in `utils/common_flags.py`.
@@ -130,7 +144,7 @@ Finally, the user can set the following flags to specify the output directories 
 
 
 
-### Compute Explanations
+#### Compute Explanations
 To compute explanations, use the `run_clustering.py` script with the common flags set appropriately.
 
 ```bash
@@ -149,7 +163,7 @@ Explanation are saved in `data/results/`. Specifically, the explanations for dif
 	- `data/results/mmesh/`
 	- `data/results/no_heuristic/`
 
-### Compare Methods
+#### Compare Methods
 To compare behavior between different heuristics and optimal:
 
 ```bash
@@ -163,7 +177,7 @@ This script uses all common flags except `heuristic`, since it searches for all 
 Note that the script computes statistics only for configurations (units, model, layer, and so on) for which `run_clustering.py` has already been executed with matching flags. The output is displayed in the terminal.
 
 
-### Generate Qualitative Difference Visualizations
+#### Generate Qualitative Difference Visualizations
 Generate qualitative difference figures between M-MESH and Optimal:
 
 ```bash
@@ -176,7 +190,7 @@ Generate qualitative difference figures between M-MESH and Optimal:
 
 
 
-## Reproducibility Notes
+#### Reproducibility Notes
 
 - Set `--seed` (default `0`) for deterministic behavior where possible.
 - Add `CUBLAS_WORKSPACE_CONFIG=:4096:8` for CUDA reproducibility.
