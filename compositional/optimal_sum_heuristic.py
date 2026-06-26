@@ -117,6 +117,17 @@ def estimate_disjoint_label_info(label, *, left_quantities, right_quantities):
     min_common_intersection_sum = (
         min_left_common_intersection_sum + min_right_common_intersection_sum
     )
+    if (
+        (unique_intersection_sum <= left_unique_intersection_sum)
+        and (max_common_intersection_sum <= max_left_common_intersection_sum)
+        and (min_common_intersection_sum <= min_left_common_intersection_sum)
+    ) or (
+        (unique_intersection_sum <= right_unique_intersection_sum)
+        and (max_common_intersection_sum <= max_right_common_intersection_sum)
+        and (min_common_intersection_sum <= min_right_common_intersection_sum)
+    ):
+        # If one of the two side does not change to the intersection, we can discard this formula
+        return None
 
     unique_extras_sum = left_unique_extras_sum + right_unique_extras_sum
 
@@ -234,9 +245,25 @@ def estimate_label_info(label, *, left_quantities, right_quantities, neuron_quan
         quantity_type="max",
         quantity_scope="sum",
     )
+    min_left_common_intersection_sum = optimal_utils.get_quantity(
+        label_info=left_quantities,
+        quantity_name="common_intersection",
+        quantity_type="min",
+        quantity_scope="sum",
+    )
+
 
     if isinstance(label, F.Or):
-
+        if (right_unique_intersection_sum == 0 and max_right_common_intersection_sum == 0) or (
+            left_unique_intersection_sum == 0 and max_left_common_intersection_sum == 0) or (
+            right_unique_intersection_sum == 0 and min_left_common_intersection_sum == neuron_common_sum
+            ) or (
+            left_unique_intersection_sum == 0 and min_right_common_intersection_sum == neuron_common_sum):
+            # If one of the two side does not change to the intersection, we can discard this formula because
+            # OR can't reduce the extras
+            return None
+        
+        
         # Unique elements are additive since they are disjoint
         unique_intersection_sum = left_unique_intersection_sum + right_unique_intersection_sum
         unique_extras_sum = left_unique_extras_sum + right_unique_extras_sum
@@ -251,18 +278,6 @@ def estimate_label_info(label, *, left_quantities, right_quantities, neuron_quan
             max_left_common_intersection_sum + max_right_common_intersection_sum,
             neuron_common_sum,
         )
-
-        if (
-            unique_intersection_sum <= left_unique_intersection_sum
-            and max_common_intersection_sum <= max_left_common_intersection_sum
-            and min_common_intersection_sum <= min_left_common_intersection_sum
-        ) or (
-            unique_intersection_sum <= right_unique_intersection_sum
-            and max_common_intersection_sum <= max_right_common_intersection_sum
-            and min_common_intersection_sum <= min_right_common_intersection_sum
-        ):
-            # If one of the two side does not change to the intersection, we can discard this formula
-            return None
 
         # Same reasoning for the extras, but we need to consider the common space extras that can be added to both sides
         min_common_extras_sum = max(

@@ -227,7 +227,7 @@ def estimate_label_info(label, left_quantities, right_quantities, neuron_quantit
 
     # Quantities used by all the operators
     _, neuron_common_tuple, _, _, common_space_extras_tuple, _ = neuron_quantities
-    neuron_common, _ = neuron_common_tuple
+    neuron_common, neuron_common_sum = neuron_common_tuple
     common_space_extras, _ = common_space_extras_tuple
     max_left_common_intersection = optimal_utils.get_quantity(
         label_info=left_quantities,
@@ -308,11 +308,36 @@ def estimate_label_info(label, left_quantities, right_quantities, neuron_quantit
     )
 
     if isinstance(label, F.Or):
+        max_right_common_intersection_sum = optimal_utils.get_quantity(
+            label_info=right_quantities,
+            quantity_name="common_intersection",
+            quantity_type="max",
+            quantity_scope="sum",
+        )
+        max_left_common_intersection_sum = optimal_utils.get_quantity(
+            label_info=left_quantities,
+            quantity_name="common_intersection",
+            quantity_type="max",
+            quantity_scope="sum",
+        )
         # Auxiliary info: Sum of the right quantities, right unique extras and intersection
         right_unique_intersection_sum = optimal_utils.get_quantity(
             label_info=right_quantities,
             quantity_name="unique_intersection",
             quantity_type="max",
+            quantity_scope="sum",
+        )
+
+        min_left_common_intersection_sum = optimal_utils.get_quantity(
+            label_info=left_quantities,
+            quantity_name="common_intersection",
+            quantity_type="min",
+            quantity_scope="sum",
+        )
+        min_right_common_intersection_sum = optimal_utils.get_quantity(
+            label_info=right_quantities,
+            quantity_name="common_intersection",
+            quantity_type="min",
             quantity_scope="sum",
         )
         right_unique_extras_sum = optimal_utils.get_quantity(
@@ -333,6 +358,24 @@ def estimate_label_info(label, left_quantities, right_quantities, neuron_quantit
             quantity_type="max",
             quantity_scope="sample",
         )
+
+        if (right_unique_intersection_sum == 0 and max_right_common_intersection_sum == 0) or (
+            left_unique_intersection_sum == 0 and max_left_common_intersection_sum == 0) or (
+            right_unique_intersection_sum == 0 and min_left_common_intersection_sum == neuron_common_sum
+            ) or (
+            left_unique_intersection_sum == 0 and min_right_common_intersection_sum == neuron_common_sum):
+            # If one of the two side does not change to the intersection, we can discard this formula because
+            # OR can't reduce the extras
+            return None
+        
+        left_can_be_improved = np.where(min_left_common_intersection < neuron_common, True, False) & np.where(min_right_common_intersection > 0, True, False)
+        right_can_be_improved = np.where(min_right_common_intersection < neuron_common, True, False) & np.where(min_left_common_intersection > 0, True, False)
+        if (right_unique_intersection_sum == 0 and not left_can_be_improved.any()) or (left_unique_intersection_sum == 0 and not right_can_be_improved.any()):
+            # If for a sample the min left intersection is already maximum, the right component cannot improve the score
+            # Similarly, if the minimum common intersection of the right element is 0, it cannot improve the score for that sample
+            return None
+
+
 
         # OR simply sums the unique elements
         unique_intersection = left_unique_intersection + right_unique_intersection # I^u(L) + I^u(c)
@@ -767,6 +810,7 @@ def and_not_chain_estimation(
         ).sum()
     else:
         max_intersection = unique_intersection_sum + max_common_intersection_sum
+    
     min_union = num_hits + unique_extras_sum
 
     # Min IoU
