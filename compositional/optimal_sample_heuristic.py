@@ -368,8 +368,8 @@ def estimate_label_info(label, left_quantities, right_quantities, neuron_quantit
             # OR can't reduce the extras
             return None
         
-        left_can_be_improved = np.where(min_left_common_intersection < neuron_common, True, False) & np.where(min_right_common_intersection > 0, True, False)
-        right_can_be_improved = np.where(min_right_common_intersection < neuron_common, True, False) & np.where(min_left_common_intersection > 0, True, False)
+        left_can_be_improved = np.where(min_left_common_intersection < neuron_common, True, False) & np.where(max_right_common_intersection > 0, True, False)
+        right_can_be_improved = np.where(min_right_common_intersection < neuron_common, True, False) & np.where(max_left_common_intersection > 0, True, False)
         if (right_unique_intersection_sum == 0 and not left_can_be_improved.any()) or (left_unique_intersection_sum == 0 and not right_can_be_improved.any()):
             # If for a sample the min left intersection is already maximum, the right component cannot improve the score
             # Similarly, if the minimum common intersection of the right element is 0, it cannot improve the score for that sample
