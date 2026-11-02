@@ -102,8 +102,6 @@ def update_frontier_by_ancestors(
 def apply_distributive_property(node):
     """Apply the Distributive Property to the label if possible.
 
-    The Distributive Property states that A AND (B OR C) is equivalent to (A AND B) OR (A AND C). This transformation is used to correct the overestimation of the heuristics in some cases. For example, if you have a formula like (A OR B) AND NOT C, the heuristic might overestimate the IoU of this formula because it does not consider the fact that NOT C can be distributed to both A and B. By applying the Distributive Property, we can transform this formula into ((A AND NOT C) OR (B AND NOT C)), which has a more accurate estimation of the IoU.
-
     Args:
         node (tuple): A tuple containing the information of the node to apply the Distributive Property to. The tuple contains the estimated IoU, the next operation, the current label, the paths to expand for the next iterations, and the heuristic used for the estimation.
 
@@ -114,24 +112,24 @@ def apply_distributive_property(node):
     if next_op_node != "INDIVIDUAL" or len(label) < 3:
         # We apply this to only labels and not paths.
         # This is because the purpose of this transformation is to correct
-        # errors in overestimations cumulated through the paths. In this case, often
+        # errors in overstimations cumulated through the paths. In this case, often
         # You have something like (A OR B) AND NOT C with NOT C dominating for the max improvement factor
         # Since the distributive property ensures that the semantic is preserved, we try to correct those overestimations by
         # considering the transformations since computing ((A AND NOT C) OR (B AND NOT C)) is more accurate than
-        # computing ((A OR B) AND NOT C) since everything is a pairwise estimation.
+        # computing ((A OR B) AND NOT C) since everythin is a pariwise estimation.
         return label
+    external_op = label.__class__
     if external_op == F.Or:
         # We do not rewrite (A AND B) OR C as (A OR C) AND (B OR C).
         # Otherwise, it would put C on both sides of an AND.
         # Our code assumes that AND removes always the unique elements,
-        # since it aassumes the concepts cannot be repeated.
-        # Therefore, it would underestimate the denominator of the IoU,
+        # since it assumes the concepts cannot be repeated.
+        # Therefore, it would underestimate the numerator of the IoU,
         # leading to a lower upper bound.
         return label
     label_left = label.left
     num_left_op = len(set(label_left.get_ops()))
     if num_left_op == 1:
-        external_op = label.__class__
         internal_op = label_left.__class__
         if external_op == internal_op:
             return label
@@ -141,8 +139,9 @@ def apply_distributive_property(node):
         for val in vals_left:
             inner_formula = external_op(F.Leaf(val), label.right)
             chain.append(inner_formula)
-        for i in range(len(chain) - 1):
-            final_formula = internal_op(chain[i], chain[i + 1])
+        final_formula = chain[0]
+        for term in chain[1:]:
+            final_formula = internal_op(final_formula, term)
         return final_formula
     else:
         return label
